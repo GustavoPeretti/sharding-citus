@@ -1,0 +1,28 @@
+services:
+  coordinator:
+    container_name: coordinator
+    image: citusdata/citus
+    restart: always
+    networks:
+      - citus
+    environment:
+      POSTGRES_PASSWORD: example
+  worker-101:
+    container_name: worker-101
+    image: citusdata/citus
+    restart: always
+    networks:
+      - citus
+    environment:
+      POSTGRES_PASSWORD: example
+  worker-102:
+    container_name: worker-102
+    image: citusdata/citus
+    restart: always
+    networks:
+      - citus
+    environment:
+      POSTGRES_PASSWORD: example
+networks:
+  citus:
+    name: citus
