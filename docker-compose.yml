@@ -3,6 +3,13 @@ services:
     container_name: coordinator
     image: citusdata/citus
     restart: always
+    depends_on:
+      worker-101:
+        condition: service_healthy
+      worker-102:
+        condition: service_healthy
+    volumes:
+      - ./coordinator/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - citus
     environment:
@@ -10,6 +17,11 @@ services:
   worker-101:
     container_name: worker-101
     image: citusdata/citus
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
     restart: always
     networks:
       - citus
@@ -18,6 +30,11 @@ services:
   worker-102:
     container_name: worker-102
     image: citusdata/citus
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
     restart: always
     networks:
       - citus
