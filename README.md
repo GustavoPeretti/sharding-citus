@@ -10,7 +10,11 @@ O ambiente possui três contêineres:
 
 As três instâncias são baseadas na imagem `citusdata/citus`, que corresponde a uma imagem do PostgreSQL configurada com a extensão do Citus.
 
-## Inicialização
+## Sharding
+
+## Teste com ambiente PostgreSQL
+
+### Inicialização
 
 Para implantar o ambiente, utilize o comando:
 
@@ -20,7 +24,7 @@ docker compose up -d --build
 
 Para verificar se os contêineres foram inicializados corretamente, verifique o status com `docker ps -a`.
 
-## Configuração das instâncias
+### Configuração das instâncias
 
 Na instância coordenadora, acesse a ferramenta `psql` com o comando:
 
@@ -47,7 +51,7 @@ Para verificar se os nós foram configurados, utilize o comando:
 SELECT * FROM citus_get_active_worker_nodes();
 ```
 
-## Criação e distribuição de uma tabela
+### Criação e distribuição de uma tabela
 
 No mesmo prompt, crie uma tabela:
 
@@ -67,7 +71,7 @@ Para fazer a distribuição da tabela entre os workers, utilize o comando:
 SELECT create_distributed_table('usuarios', 'id');
 ```
 
-## Inserção de dados
+### Inserção de dados
 
 Popule a tabela com o seguinte comando:
 
@@ -84,6 +88,16 @@ SELECT
     'user' || g || '@email.com',
     '(49)99999-' || g
 FROM generate_series(1,100000) g;
+```
+
+### Validação
+
+```sql
+SELECT * FROM citus_tables;
+SHOW citus.shard_count;
+SET citus.shard_count TO 32;
+SELECT * from pg_dist_shard;
+SELECT * FROM citus_shards;
 ```
 
 ## Principais referências
