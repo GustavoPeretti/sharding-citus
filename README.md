@@ -10,7 +10,15 @@ O ambiente possui três contêineres:
 
 As três instâncias são baseadas na imagem `citusdata/citus`, que corresponde a uma imagem do PostgreSQL configurada com a extensão do Citus.
 
+## Citus
+
+Citus é uma extensão do PostgreSQL que transforma uma instância convencional em um banco de dados distribuído. Ele adiciona um nó **coordinator** responsável por planejar e rotear as consultas, e múltiplos nós **workers** que armazenam e processam os dados em paralelo, mantendo total compatibilidade com SQL padrão.
+
 ## Sharding
+
+Sharding é uma técnica de particionamento horizontal que divide os dados de uma tabela em fragmentos menores chamados **shards**, distribuídos entre múltiplos nós. Cada nó armazena apenas uma parte dos dados, permitindo que leituras e escritas ocorram em paralelo.
+
+No Citus, o coordinator recebe as consultas e as roteia para os workers responsáveis pelos shards correspondentes. A distribuição é feita com base em uma **coluna de distribuição** (no caso, `id`), e cada shard é mapeado para um intervalo de valores dessa coluna.
 
 ## Teste com ambiente PostgreSQL
 
@@ -237,3 +245,5 @@ A consulta acima resulta em:
 - [Clusters Citus de vários nós no Ubuntu ou Debian](https://learn.microsoft.com/pt-br/postgresql/citus/multi-node-ubuntu-debian?view=citus-14)
 - [Create and modify distributed objects (DDL)](https://learn.microsoft.com/en-us/postgresql/citus/reference-ddl?view=citus-14)
 - [Citus cluster metadata reference](https://learn.microsoft.com/en-us/postgresql/citus/api-metadata?view=citus-14)
+- [Scaling Horizontally on PostgreSQL: Citus’s Impact on Database Architecture](https://demirhuseyinn-94.medium.com/scaling-horizontally-on-postgresql-cituss-impact-on-database-architecture-295329c72c62)
+- [Database Sharding - System Design](https://www.geeksforgeeks.org/system-design/database-sharding-a-system-design-concept/)
