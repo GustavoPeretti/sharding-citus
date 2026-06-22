@@ -241,11 +241,53 @@ A consulta acima resulta em:
 [...]
 ```
 
+### Agregação em consultas distribuídas
+
+O Citus implementa alguns mecanismos para lidar com agregação em consultas distribuídas. O principal método consiste em processar as agregações em cada worker de forma paralela, enquanto o coordenador consolida os resultados e produz o resultado final.
+
+Esse caso pode ser demonstrado utilizando uma consulta simples com agregação `COUNT`:
+
+```sql
+EXPLAIN (ANALYZE, VERBOSE) SELECT COUNT(*) FROM usuarios;
+```
+
+O comando acima produz:
+
+```
+                                                                        QUERY PLAN                                                                         
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=250.00..250.02 rows=1 width=8) (actual time=22.491..22.492 rows=1.00 loops=1)
+   Output: COALESCE((pg_catalog.sum(remote_scan.count))::bigint, '0'::bigint)
+   ->  Custom Scan (Citus Adaptive)  (cost=0.00..0.00 rows=100000 width=8) (actual time=22.444..22.449 rows=32.00 loops=1)
+         Output: remote_scan.count
+         Task Count: 32
+         Tuple data received from nodes: 256 bytes
+         Tasks Shown: One of 32
+         ->  Task
+               Query: SELECT count(*) AS count FROM public.usuarios_102027 usuarios WHERE true
+               Tuple data received from node: 8 bytes
+               Node: host=worker-102 port=5432 dbname=postgres
+               ->  Aggregate  (cost=75.59..75.60 rows=1 width=8) (actual time=0.721..0.722 rows=1.00 loops=1)
+                     Output: count(*)
+                     Buffers: shared hit=36
+                     ->  Seq Scan on public.usuarios_102027 usuarios  (cost=0.00..67.67 rows=3167 width=0) (actual time=0.008..0.374 rows=3167.00 loops=1)
+                           Output: id, nome, data_nascimento, email, telefone
+                           Buffers: shared hit=36
+
+[...]
+```
+
+Na consulta apresentada é possível observar que:
+
+- O resultado da consulta é um acumulador (`remote_scan.count`)
+- As tarefas consistem em processar agregações em cada shard (no exemplo acima, `usuarios_102027`)
+
 ## Principais referências
 
 - [Citus: Sharding your first table](https://www.cybertec-postgresql.com/en/citus-sharding-your-first-table/)
 - [Clusters Citus de vários nós no Ubuntu ou Debian](https://learn.microsoft.com/pt-br/postgresql/citus/multi-node-ubuntu-debian?view=citus-14)
 - [Create and modify distributed objects (DDL)](https://learn.microsoft.com/en-us/postgresql/citus/reference-ddl?view=citus-14)
 - [Citus cluster metadata reference](https://learn.microsoft.com/en-us/postgresql/citus/api-metadata?view=citus-14)
+- [Run SQL queries on Citus distributed tables](https://learn.microsoft.com/en-us/postgresql/citus/reference-sql?view=citus-14)
 - [Scaling Horizontally on PostgreSQL: Citus’s Impact on Database Architecture](https://demirhuseyinn-94.medium.com/scaling-horizontally-on-postgresql-cituss-impact-on-database-architecture-295329c72c62)
 - [Database Sharding - System Design](https://www.geeksforgeeks.org/system-design/database-sharding-a-system-design-concept/)
