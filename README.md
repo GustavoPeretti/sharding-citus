@@ -105,7 +105,7 @@ FROM generate_series(1,100000) g;
 Com o comando `\d+` no `coordinator`, é possível verificar a existência de duas views: `citus_schemas` e `citus_tables`. Como a distribuição foi realizada sobre uma tabela, devemos verificar a tabela `citus_tables`:
 
 ```sql
-SELECT * FROM citus_tables:
+SELECT * FROM citus_tables;
 ```
 
 Com o comando acima, é possível verificar que a tabela `usuarios` está registrada como `distributed`, indicando que o Citus distribuiu ela automaticamente em 32 shards:
