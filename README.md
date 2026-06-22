@@ -12,15 +12,16 @@ As três instâncias são baseadas na imagem `citusdata/citus`, que corresponde 
 
 ![Diagrama da arquitetura utilizada](./imagens/sharding.png)
 
-## Citus
-
-Citus é uma extensão do PostgreSQL que transforma uma instância convencional em um banco de dados distribuído. Ele adiciona um nó **coordinator** responsável por planejar e rotear as consultas, e múltiplos nós **workers** que armazenam e processam os dados em paralelo, mantendo total compatibilidade com SQL padrão.
-
 ## Sharding
 
 Sharding é uma técnica de particionamento horizontal que divide os dados de uma tabela em fragmentos menores chamados **shards**, distribuídos entre múltiplos nós. Cada nó armazena apenas uma parte dos dados, permitindo que leituras e escritas ocorram em paralelo.
 
 No Citus, o coordinator recebe as consultas e as roteia para os workers responsáveis pelos shards correspondentes. A distribuição é feita com base em uma **coluna de distribuição** (no caso, `id`), e cada shard é mapeado para um intervalo de valores dessa coluna.
+
+
+### Citus
+
+Citus é uma extensão do PostgreSQL que transforma uma instância convencional em um banco de dados distribuído. Ele adiciona um nó **coordinator** responsável por planejar e rotear as consultas, e múltiplos nós **workers** que armazenam e processam os dados em paralelo, mantendo total compatibilidade com SQL padrão.
 
 ## Teste com ambiente PostgreSQL
 
@@ -281,6 +282,24 @@ Na consulta apresentada é possível observar que:
 
 - O resultado da consulta é um acumulador (`remote_scan.count`)
 - As tarefas consistem em processar agregações em cada shard (no exemplo acima, `usuarios_102027`)
+
+## Vantagens e desvantagens
+
+Entre as vantagens do Citus, podemos citar:
+
+- Escalabilidade facilitada: permite expandir o banco adicionando novos servidores conforme a demanda cresce;
+- Melhor aproveitamento dos recursos: distribui o processamento entre vários nós;
+- Maior desempenho em grandes volumes de dados: consultas podem ser executadas em paralelo;
+- Compatibilidade com PostgreSQL: utiliza as mesmas ferramentas e comandos já conhecidos;
+- Alta disponibilidade: suporta replicação e tolerância a falhas.
+
+Entre as desvantagens do Citus, podemos citar:
+
+- Configuração e gerenciamento mais complexos do que um PostgreSQL tradicional;
+- Dependência da estratégia de distribuição dos dados para obter bom desempenho;
+- Maior custo de infraestrutura, devido à necessidade de múltiplos servidores;
+- Consultas distribuídas podem gerar latência adicional em alguns cenários;
+- Rebalanceamento de dados pode ser necessário ao expandir o cluster.
 
 ## Principais referências
 
