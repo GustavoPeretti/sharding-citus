@@ -10,6 +10,8 @@ O ambiente possui três contêineres:
 
 As três instâncias são baseadas na imagem `citusdata/citus`, que corresponde a uma imagem do PostgreSQL configurada com a extensão do Citus.
 
+![Diagrama da arquitetura utilizada](./imagens/sharding.png)
+
 ## Citus
 
 Citus é uma extensão do PostgreSQL que transforma uma instância convencional em um banco de dados distribuído. Ele adiciona um nó **coordinator** responsável por planejar e rotear as consultas, e múltiplos nós **workers** que armazenam e processam os dados em paralelo, mantendo total compatibilidade com SQL padrão.
