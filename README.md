@@ -25,6 +25,8 @@ Citus é uma extensão do PostgreSQL que transforma uma instância convencional 
 
 ## Teste com ambiente PostgreSQL
 
+Por padrão, a implantação dos contêineres deste repositório já fornece um ambiente com um exemplo de tabela distribuída. As próximas seções, especialmente "Configuração das instâncias", descrevem o procedimento para criar a tabela de exemplo manualmente.
+
 ### Inicialização
 
 Para implantar o ambiente, utilize o comando:
@@ -300,6 +302,50 @@ Entre as desvantagens do Citus, podemos citar:
 - Maior custo de infraestrutura, devido à necessidade de múltiplos servidores;
 - Consultas distribuídas podem gerar latência adicional em alguns cenários;
 - Rebalanceamento de dados pode ser necessário ao expandir o cluster.
+
+## Desafios
+
+Apesar da simplicidade em configurar e implantar um cluster Citus, alguns desafios foram enfrentados. O principal desafio está relacionado à identificação do local onde os registros foram armazenados.
+
+O Citus abstrai muito bem a distribuição de registros em shards e workers. Essa abstração facilita o trabalho do administrador do cluster, que consegue configurar as instâncias com pouca dificuldade, mas dificulta a verificação de detalhes de armazenamento em workers e shards. Antes da implantação inicial, o administrador espera que as shards sejam visíveis nos workers. No entanto, nos workers, as shards são ocultas.
+
+É possível acessar o `worker-101` com o comando:
+
+```bash
+docker exec -it worker-101 psql -U postgres
+```
+
+Ao executar o comando `\d+`, o seguinte resultado é obtido:
+
+```
+                                            List of relations
+ Schema |      Name       |   Type   |  Owner   | Persistence | Access method |    Size    | Description 
+--------+-----------------+----------+----------+-------------+---------------+------------+-------------
+ public | citus_schemas   | view     | postgres | permanent   |               | 0 bytes    | 
+ public | citus_tables    | view     | postgres | permanent   |               | 0 bytes    | 
+ public | usuarios        | table    | postgres | permanent   | heap          | 8192 bytes | 
+ public | usuarios_id_seq | sequence | postgres | permanent   |               | 8192 bytes | 
+(4 rows)
+```
+
+Na relação acima, não é possível ver as shards criadas para a tabela `usuarios`. No entanto, ainda é possível acessá-las no worker:
+
+```sql
+SELECT * FROM usuarios_102008;
+```
+
+O comando acima resulta em:
+
+```
+  id   |     nome      | data_nascimento |        email        |    telefone     
+-------+---------------+-----------------+---------------------+-----------------
+     8 | Usuario 8     | 2026-06-22      | user8@email.com     | (49)99999-8
+    20 | Usuario 20    | 2026-06-22      | user20@email.com    | (49)99999-20
+    60 | Usuario 60    | 2026-06-22      | user60@email.com    | (49)99999-60
+   132 | Usuario 132   | 2026-06-22      | user132@email.com   | (49)99999-132
+
+[...]
+```
 
 ## Principais referências
 
